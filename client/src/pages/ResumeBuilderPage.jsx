@@ -290,56 +290,94 @@ const ResumeBuilderPage = () => {
     <DashboardLayout>
       <div className="space-y-6">
         
-        {/* Header Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Top Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-extrabold text-white tracking-tight">ATS Resume Builder</h1>
-              <Sparkles className="w-5 h-5 text-brand-400" />
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">ATS Resume Builder</h1>
+              <Sparkles className="w-5 h-5 text-[#5B4BFF]" />
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Build or parse your resume, preview in 3 ATS-friendly templates, and export to PDF
+            <p className="text-xs text-slate-500 mt-1 font-medium">
+              Create, edit, and format professional ATS-friendly resumes with real-time paper preview
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Save Resume Button */}
             <button
               onClick={handleSaveResume}
               disabled={isSaving}
-              className="px-4 py-2.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+              className="px-5 py-3 text-xs font-bold text-white bg-[#5B4BFF] hover:bg-indigo-700 rounded-2xl shadow-xs transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
-              {isSaving ? <Loader2 className="w-4 h-4 animate-spin text-brand-400" /> : <Save className="w-4 h-4 text-brand-400" />}
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Save Resume
             </button>
 
+            {/* Download PDF Button */}
             <button
               onClick={handleDownloadPDF}
-              className="px-5 py-2.5 text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 rounded-xl shadow-lg shadow-brand-600/30 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-5 py-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-2xl border border-slate-200 transition-all flex items-center gap-2 cursor-pointer"
             >
-              <Download className="w-4 h-4" /> Download PDF
+              <Download className="w-4 h-4 text-slate-600" /> Download PDF
             </button>
           </div>
         </div>
 
+        {/* Visual Template Selector Thumbnails */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Choose ATS Resume Template</h3>
+            <span className="text-xs text-slate-400 font-medium">3 ATS Screened Styles</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { id: 'modern', name: 'Modern ATS', desc: 'Left accent bar & bold typography', previewImg: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' },
+              { id: 'classic', name: 'Classic Serif', desc: 'Traditional centered header layout', previewImg: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=400&q=80' },
+              { id: 'minimal', name: 'Minimal Monochrome', desc: 'Ultra-clean monochrome typography', previewImg: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80' },
+            ].map((tmpl) => (
+              <div
+                key={tmpl.id}
+                onClick={() => setSelectedTemplate(tmpl.id)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 group ${
+                  selectedTemplate === tmpl.id
+                    ? 'border-[#5B4BFF] bg-indigo-50/60 ring-2 ring-[#5B4BFF]/20 shadow-sm'
+                    : 'border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300'
+                }`}
+              >
+                <div className="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shrink-0 bg-white">
+                  <img src={tmpl.previewImg} alt={tmpl.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#5B4BFF] transition-colors">{tmpl.name}</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{tmpl.desc}</p>
+                  <span className={`inline-block text-[9px] font-bold mt-1 px-2 py-0.5 rounded-full ${selectedTemplate === tmpl.id ? 'bg-[#5B4BFF] text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    {selectedTemplate === tmpl.id ? 'Selected' : 'Select Template'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Mode Toggle: Create vs Upload */}
-        <div className="p-1.5 bg-slate-900 border border-slate-800 rounded-2xl grid grid-cols-2 max-w-md">
+        <div className="p-1.5 bg-slate-100 border border-slate-200 rounded-2xl grid grid-cols-2 max-w-md">
           <button
             onClick={() => setActiveMode('form')}
-            className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${
+            className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeMode === 'form'
-                ? 'bg-brand-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-[#5B4BFF] shadow-xs border border-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <FileText className="w-4 h-4" /> 1. Create / Edit Form
           </button>
           <button
             onClick={() => setActiveMode('upload')}
-            className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all ${
+            className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeMode === 'upload'
-                ? 'bg-brand-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-[#5B4BFF] shadow-xs border border-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Upload className="w-4 h-4" /> 2. Upload & Parse File
