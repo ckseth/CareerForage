@@ -222,17 +222,30 @@ export const ModernTemplate = ({ data = {} }) => {
   return (
     <div className="bg-white text-slate-900 font-sans p-8 sm:p-10 shadow-2xl rounded-sm max-w-2xl mx-auto text-xs space-y-6 leading-relaxed">
       {/* Header Banner */}
-      <div className="border-l-4 border-indigo-600 pl-4 space-y-2">
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">{pd.name || 'Candidate Name'}</h1>
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600 font-medium">
-          {pd.email && <span>{pd.email}</span>}
-          {pd.phone && <span>• {pd.phone}</span>}
-          {pd.address && <span>• {pd.address}</span>}
+      <div className="border-l-4 border-[#4169FF] pl-4 space-y-2 flex items-start justify-between gap-4">
+        <div className="space-y-1.5 flex-1">
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">{pd.name || 'Candidate Name'}</h1>
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600 font-medium">
+            {pd.email && <span>{pd.email}</span>}
+            {pd.phone && <span>• {pd.phone}</span>}
+            {pd.address && <span>• {pd.address}</span>}
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-[#4169FF] font-semibold pt-0.5">
+            {pd.linkedin && <a href={formatUrl(pd.linkedin)} target="_blank" rel="noreferrer" className="hover:underline">LinkedIn</a>}
+            {pd.github && <a href={formatUrl(pd.github)} target="_blank" rel="noreferrer" className="hover:underline">GitHub</a>}
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-indigo-600 font-semibold pt-0.5">
-          {pd.linkedin && <a href={formatUrl(pd.linkedin)} target="_blank" rel="noreferrer" className="hover:underline">LinkedIn</a>}
-          {pd.github && <a href={formatUrl(pd.github)} target="_blank" rel="noreferrer" className="hover:underline">GitHub</a>}
-        </div>
+
+        {pd.profileImage && (
+          <img
+            src={pd.profileImage}
+            alt={pd.name || 'Candidate Profile'}
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+            className="w-16 h-16 rounded-xl object-cover border-2 border-[#4169FF]/20 shadow-xs shrink-0"
+          />
+        )}
       </div>
 
       {/* Technical & Professional Skills Chips */}
