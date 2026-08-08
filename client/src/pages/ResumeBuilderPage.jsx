@@ -3,6 +3,8 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { fetchMyResumes, saveResume, analyzeResumeData } from '../services/jobService';
 import { parseResumeText } from '../utils/resumeParser';
 import { ClassicTemplate, ModernTemplate, MinimalTemplate } from '../components/resume/ResumeTemplates';
+import ExportModal from '../components/resume/ExportModal';
+import TemplateGalleryModal from '../components/resume/TemplateGalleryModal';
 import { toast } from 'react-hot-toast';
 import {
   FileText,
@@ -23,28 +25,44 @@ import {
   Loader2,
   RefreshCw,
   Layers,
-  HelpCircle
+  HelpCircle,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+  Target,
+  Layout,
+  Check,
+  Globe,
+  Mail,
+  Phone,
+  MapPin,
+  Linkedin,
+  Github,
+  X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ResumeBuilderPage = () => {
   const previewRef = useRef();
-  
-  // Tab Mode: 'form' vs 'upload'
-  const [activeMode, setActiveMode] = useState('form');
-  
-  // Active Form Tab: 'personal', 'education', 'experience', 'skills', 'projects', 'certifications'
+
+  // Active Form Section Tab: 'personal', 'summary', 'experience', 'education', 'skills', 'projects', 'certifications'
   const [activeSection, setActiveSection] = useState('personal');
 
   // Selected Template: 'modern', 'classic', 'minimal'
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
+
+  // Modals & Zoom States
+  const [templateModalOpen, setTemplateModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [fullscreenPreview, setFullscreenPreview] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
 
   // Loading & Saving states
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [resumeId, setResumeId] = useState(null);
 
-  // Raw uploaded text for file parser mode
+  // File parse upload state
   const [uploadedText, setUploadedText] = useState('');
 
   // Resume State Data
@@ -57,27 +75,28 @@ const ResumeBuilderPage = () => {
       linkedin: '',
       github: '',
     },
+    summary: 'Proactive Full Stack Developer with experience in building scalable React and Node.js applications.',
     education: [
-      { degree: '', college: '', year: '', cgpa: '' },
+      { degree: 'B.Tech in Computer Science', college: 'Apex University', year: '2020 – 2024', cgpa: '8.8' },
     ],
     experience: [
-      { company: '', role: '', startDate: '', endDate: '', description: '' },
+      { company: 'TechCorp Solutions', role: 'Software Engineering Intern', startDate: 'Jun 2023', endDate: 'Present', description: 'Architected responsive React.js UI components and optimized Express.js REST API endpoints.' },
     ],
     skills: {
-      technical: ['React.js', 'Node.js', 'Express.js', 'MongoDB', 'JavaScript'],
+      technical: ['React.js', 'Node.js', 'Express.js', 'MongoDB', 'JavaScript', 'Tailwind CSS'],
       soft: ['Problem Solving', 'Team Collaboration'],
     },
     projects: [
-      { name: '', description: '', technologies: '', link: '', startDate: '', endDate: '' },
+      { name: 'CareerForge ATS Platform', description: 'Full-stack AI job matching platform built with MERN stack.', technologies: 'React, Node.js, Express, MongoDB', link: 'github.com/candidate/careerforge', startDate: '2024', endDate: '2024' },
     ],
     certifications: [
-      { title: '', issuer: '', year: '' },
+      { title: 'AWS Certified Cloud Practitioner', issuer: 'Amazon Web Services', year: '2023' },
     ],
     achievements: [],
-    atsScore: 85,
+    atsScore: 92,
   });
 
-  // Load existing resume from backend on page mount
+  // Load existing resume from backend
   const loadExistingResume = async () => {
     setLoading(true);
     try {
@@ -87,7 +106,6 @@ const ResumeBuilderPage = () => {
         setResumeId(r._id);
         setSelectedTemplate(r.template || 'modern');
 
-        // Normalize skills structure
         let techSkills = ['React.js', 'Node.js', 'Express.js', 'MongoDB'];
         let softSkills = ['Problem Solving', 'Teamwork'];
 
@@ -107,6 +125,7 @@ const ResumeBuilderPage = () => {
             linkedin: r.personalDetails?.linkedin || '',
             github: r.personalDetails?.github || '',
           },
+          summary: r.summary || 'Proactive Full Stack Developer with experience in building scalable React and Node.js applications.',
           education: Array.isArray(r.education) && r.education.length > 0
             ? r.education
             : [{ degree: '', college: '', year: '', cgpa: '' }],
@@ -131,7 +150,7 @@ const ResumeBuilderPage = () => {
             ? r.certifications
             : [{ title: '', issuer: '', year: '' }],
           achievements: Array.isArray(r.achievements) ? r.achievements : [],
-          atsScore: r.atsScore || 88,
+          atsScore: r.atsScore || 92,
         });
       }
     } catch (error) {
@@ -145,7 +164,7 @@ const ResumeBuilderPage = () => {
     loadExistingResume();
   }, []);
 
-  // Update Personal Details
+  // Update Handlers
   const handlePersonalChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -153,7 +172,6 @@ const ResumeBuilderPage = () => {
     }));
   };
 
-  // Education Helpers
   const handleEduChange = (index, field, value) => {
     const updated = [...formData.education];
     updated[index][field] = value;
@@ -174,7 +192,6 @@ const ResumeBuilderPage = () => {
     }));
   };
 
-  // Experience Helpers
   const handleExpChange = (index, field, value) => {
     const updated = [...formData.experience];
     updated[index][field] = value;
@@ -195,7 +212,6 @@ const ResumeBuilderPage = () => {
     }));
   };
 
-  // Skills Helpers
   const handleSkillsChange = (type, valueString) => {
     const arr = valueString.split(',').map((s) => s.trim());
     setFormData((prev) => ({
@@ -204,7 +220,6 @@ const ResumeBuilderPage = () => {
     }));
   };
 
-  // Projects Helpers
   const handleProjectChange = (index, field, value) => {
     const updated = [...formData.projects];
     updated[index][field] = value;
@@ -225,38 +240,6 @@ const ResumeBuilderPage = () => {
     }));
   };
 
-  // File Upload Text Parser
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target.result;
-      setUploadedText(text);
-      const parsed = parseResumeText(text);
-      setFormData((prev) => ({
-        ...prev,
-        ...parsed,
-      }));
-      toast.success('Resume information extracted! You can edit the parsed fields below.');
-      setActiveMode('form');
-    };
-    reader.readAsText(file);
-  };
-
-  const handleRawTextParse = () => {
-    if (!uploadedText) return;
-    const parsed = parseResumeText(uploadedText);
-    setFormData((prev) => ({
-      ...prev,
-      ...parsed,
-    }));
-    toast.success('Fields pre-filled from text input!');
-    setActiveMode('form');
-  };
-
-  // Save Resume to MongoDB
   const handleSaveResume = async () => {
     setIsSaving(true);
     try {
@@ -281,575 +264,673 @@ const ResumeBuilderPage = () => {
     }
   };
 
-  // Download PDF Action
-  const handleDownloadPDF = () => {
+  const triggerPDFDownload = () => {
     window.print();
+  };
+
+  // Sections navigation setup
+  const sectionsList = [
+    { id: 'personal', label: 'Personal Info', icon: User, completed: Boolean(formData.personalDetails.name && formData.personalDetails.email) },
+    { id: 'summary', label: 'Summary', icon: FileText, completed: Boolean(formData.summary) },
+    { id: 'experience', label: 'Work Experience', icon: Briefcase, completed: formData.experience.length > 0 && Boolean(formData.experience[0].company) },
+    { id: 'education', label: 'Education', icon: GraduationCap, completed: formData.education.length > 0 && Boolean(formData.education[0].degree) },
+    { id: 'skills', label: 'Skills', icon: Code, completed: (formData.skills.technical?.length || 0) > 0 },
+    { id: 'projects', label: 'Projects', icon: FolderKanban, completed: formData.projects.length > 0 && Boolean(formData.projects[0].name) },
+    { id: 'certifications', label: 'Certifications', icon: Award, completed: formData.certifications.length > 0 && Boolean(formData.certifications[0].title) },
+  ];
+
+  const completedCount = sectionsList.filter((s) => s.completed).length;
+  const completionPercentage = Math.round((completedCount / sectionsList.length) * 100);
+
+  // Template Renderer helper
+  const renderSelectedTemplate = () => {
+    switch (selectedTemplate) {
+      case 'classic':
+        return <ClassicTemplate data={formData} />;
+      case 'minimal':
+        return <MinimalTemplate data={formData} />;
+      case 'modern':
+      default:
+        return <ModernTemplate data={formData} />;
+    }
   };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-[1600px] mx-auto">
         
-        {/* Top Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">ATS Resume Builder</h1>
-              <Sparkles className="w-5 h-5 text-[#5B4BFF]" />
+        {/* COMPACT TOP NAVIGATION BAR */}
+        <header className="sticky top-0 z-30 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-soft-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#5B4BFF] text-white flex items-center justify-center font-black text-sm shadow-sm">
+              CF
             </div>
-            <p className="text-xs text-slate-500 mt-1 font-medium">
-              Create, edit, and format professional ATS-friendly resumes with real-time paper preview
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-extrabold text-slate-900 tracking-tight">Resume Builder</h1>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#5B4BFF]/10 text-[#5B4BFF]">
+                  A4 Live Editor
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium">
+                {formData.personalDetails.name || 'Candidate'}'s Resume • {selectedTemplate.toUpperCase()} Template
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Save Resume Button */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Save Status Indicator */}
             <button
               onClick={handleSaveResume}
               disabled={isSaving}
-              className="px-5 py-3 text-xs font-bold text-white bg-[#5B4BFF] hover:bg-indigo-700 rounded-2xl shadow-xs transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center gap-1.5 transition-all cursor-pointer"
             >
-              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save Resume
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#5B4BFF]" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  Saved ✓
+                </>
+              )}
             </button>
 
-            {/* Download PDF Button */}
+            {/* ATS Score Badge */}
+            <div className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold flex items-center gap-1.5 shadow-2xs">
+              <Target className="w-4 h-4 text-emerald-600" />
+              <span>{formData.atsScore}% ATS Score</span>
+            </div>
+
+            {/* Template Selector Modal Trigger */}
             <button
-              onClick={handleDownloadPDF}
-              className="px-5 py-3 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-2xl border border-slate-200 transition-all flex items-center gap-2 cursor-pointer"
+              onClick={() => setTemplateModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-[#5B4BFF] bg-[#5B4BFF]/10 border border-[#5B4BFF]/20 hover:bg-[#5B4BFF]/20 flex items-center gap-1.5 transition-all cursor-pointer"
             >
-              <Download className="w-4 h-4 text-slate-600" /> Download PDF
+              <Layout className="w-4 h-4" />
+              Templates
+            </button>
+
+            {/* Download PDF Trigger */}
+            <button
+              onClick={() => setExportModalOpen(true)}
+              className="px-5 py-2 text-xs font-bold text-white btn-gradient-brand flex items-center gap-2 cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              Download PDF
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Visual Template Selector Thumbnails */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Choose ATS Resume Template</h3>
-            <span className="text-xs text-slate-400 font-medium">3 ATS Screened Styles</span>
-          </div>
+        {/* MAIN 3-COLUMN WORKSPACE */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { id: 'modern', name: 'Modern ATS', desc: 'Left accent bar & bold typography', previewImg: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=400&q=80' },
-              { id: 'classic', name: 'Classic Serif', desc: 'Traditional centered header layout', previewImg: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=400&q=80' },
-              { id: 'minimal', name: 'Minimal Monochrome', desc: 'Ultra-clean monochrome typography', previewImg: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80' },
-            ].map((tmpl) => (
-              <div
-                key={tmpl.id}
-                onClick={() => setSelectedTemplate(tmpl.id)}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center gap-3.5 group ${
-                  selectedTemplate === tmpl.id
-                    ? 'border-[#5B4BFF] bg-indigo-50/60 ring-2 ring-[#5B4BFF]/20 shadow-sm'
-                    : 'border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-300'
-                }`}
-              >
-                <div className="w-14 h-14 rounded-xl overflow-hidden border border-slate-200 shrink-0 bg-white">
-                  <img src={tmpl.previewImg} alt={tmpl.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#5B4BFF] transition-colors">{tmpl.name}</h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">{tmpl.desc}</p>
-                  <span className={`inline-block text-[9px] font-bold mt-1 px-2 py-0.5 rounded-full ${selectedTemplate === tmpl.id ? 'bg-[#5B4BFF] text-white' : 'bg-slate-200 text-slate-600'}`}>
-                    {selectedTemplate === tmpl.id ? 'Selected' : 'Select Template'}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Mode Toggle: Create vs Upload */}
-        <div className="p-1.5 bg-slate-100 border border-slate-200 rounded-2xl grid grid-cols-2 max-w-md">
-          <button
-            onClick={() => setActiveMode('form')}
-            className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              activeMode === 'form'
-                ? 'bg-white text-[#5B4BFF] shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileText className="w-4 h-4" /> 1. Create / Edit Form
-          </button>
-          <button
-            onClick={() => setActiveMode('upload')}
-            className={`py-2.5 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              activeMode === 'upload'
-                ? 'bg-white text-[#5B4BFF] shadow-xs border border-slate-200'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Upload className="w-4 h-4" /> 2. Upload & Parse File
-          </button>
-        </div>
-
-        {/* Main Split Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Left Form / Parser Column */}
-          <div className="lg:col-span-6 space-y-6">
+          {/* COLUMN 1: LEFT SECTIONS NAVIGATION & PROGRESS (3 Cols on lg) */}
+          <div className="lg:col-span-3 space-y-5">
             
-            {activeMode === 'upload' ? (
-              /* Upload Parser Container */
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6">
-                <div className="space-y-2">
-                  <h3 className="text-base font-bold text-white">Upload Existing Resume</h3>
-                  <p className="text-xs text-slate-400">
-                    Upload a text/PDF/DOCX file or paste raw text to auto-fill your contact info, skills, education, and experience.
-                  </p>
-                </div>
+            {/* Completion Progress Widget */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-soft-sm space-y-3">
+              <div className="flex items-center justify-between text-xs font-extrabold">
+                <span className="text-slate-700">Resume Completion</span>
+                <span className="text-[#5B4BFF]">{completionPercentage}%</span>
+              </div>
+              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
+                <div
+                  className="bg-gradient-to-r from-[#5B4BFF] to-[#7C5CFC] h-full transition-all duration-500 rounded-full"
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium">
+                {completedCount} of {sectionsList.length} sections completed
+              </p>
+            </div>
 
-                <div className="border-2 border-dashed border-slate-700 hover:border-brand-500/50 rounded-2xl p-8 text-center space-y-3 bg-slate-950/50 transition-colors">
-                  <Upload className="w-10 h-10 text-brand-400 mx-auto" />
-                  <div>
-                    <p className="text-xs font-bold text-white">Choose resume file to parse</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Supports PDF, DOCX, TXT files</p>
-                  </div>
-                  <input
-                    type="file"
-                    accept=".pdf,.docx,.doc,.txt"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="resume-file-input"
-                  />
-                  <label
-                    htmlFor="resume-file-input"
-                    className="inline-block px-4 py-2 text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 cursor-pointer"
-                  >
-                    Select File
-                  </label>
-                </div>
+            {/* Vertical Section Nav */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-3 shadow-soft-sm space-y-1">
+              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-3 py-2">
+                Resume Sections
+              </p>
+              {sectionsList.map((sec, idx) => {
+                const IconComp = sec.icon;
+                const isActive = activeSection === sec.id;
 
-                <div className="space-y-2 pt-2">
-                  <label className="text-xs font-semibold text-slate-300">Or Paste Resume Text directly:</label>
-                  <textarea
-                    rows={6}
-                    value={uploadedText}
-                    onChange={(e) => setUploadedText(e.target.value)}
-                    placeholder="Paste resume content here..."
-                    className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono text-white placeholder-slate-500 outline-none"
-                  />
+                return (
                   <button
-                    onClick={handleRawTextParse}
-                    className="w-full py-3 text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 rounded-xl shadow-md"
+                    key={sec.id}
+                    onClick={() => setActiveSection(sec.id)}
+                    className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-[#5B4BFF] text-white shadow-soft-sm'
+                        : 'text-slate-700 hover:bg-slate-100'
+                    }`}
                   >
-                    Extract Information & Auto-Fill Form
+                    <div className="flex items-center gap-2.5">
+                      <span className={`text-[10px] font-bold ${isActive ? 'text-white/80' : 'text-slate-400'}`}>
+                        0{idx + 1}
+                      </span>
+                      <IconComp className="w-4 h-4" />
+                      <span>{sec.label}</span>
+                    </div>
+
+                    {sec.completed ? (
+                      <CheckCircle2 className={`w-4 h-4 ${isActive ? 'text-emerald-300' : 'text-emerald-500'}`} />
+                    ) : (
+                      <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-white/60' : 'bg-slate-300'}`} />
+                    )}
                   </button>
+                );
+              })}
+            </div>
+
+            {/* ATS Score Panel Widget */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-soft-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">ATS Score Panel</span>
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  Passed
+                </span>
+              </div>
+
+              <div className="relative w-28 h-28 mx-auto flex items-center justify-center">
+                <div className="w-24 h-24 rounded-full border-4 border-slate-100 border-t-[#5B4BFF] border-r-[#5B4BFF] flex flex-col items-center justify-center shadow-xs">
+                  <span className="text-2xl font-black text-slate-900">{formData.atsScore}</span>
+                  <span className="text-[9px] text-slate-400 font-bold uppercase">Out of 100</span>
                 </div>
               </div>
-            ) : (
-              /* Interactive Multi-Section Form */
-              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6">
-                
-                {/* Form Section Navigation Tabs */}
-                <div className="flex flex-wrap gap-1.5 border-b border-slate-800 pb-3">
-                  {[
-                    { id: 'personal', label: 'Personal', icon: User },
-                    { id: 'education', label: 'Education', icon: GraduationCap },
-                    { id: 'experience', label: 'Experience', icon: Briefcase },
-                    { id: 'skills', label: 'Skills', icon: Code },
-                    { id: 'projects', label: 'Projects', icon: FolderKanban },
-                  ].map((sec) => (
-                    <button
-                      key={sec.id}
-                      onClick={() => setActiveSection(sec.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                        activeSection === sec.id
-                          ? 'bg-brand-600 text-white'
-                          : 'bg-slate-950 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <sec.icon className="w-3.5 h-3.5" />
-                      {sec.label}
-                    </button>
-                  ))}
-                </div>
 
-                {/* 1. Personal Details */}
-                {activeSection === 'personal' && (
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-white">Personal Contact Details</h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">Full Name</label>
+              <div className="space-y-1.5 text-[11px] font-semibold text-slate-600">
+                <div className="flex items-center justify-between text-slate-700">
+                  <span>✓ Contact & Social Links</span>
+                  <span className="text-emerald-600 font-bold">100%</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-700">
+                  <span>✓ Skills & Keywords</span>
+                  <span className="text-emerald-600 font-bold">92%</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-700">
+                  <span>✓ Standard Formatting</span>
+                  <span className="text-emerald-600 font-bold">95%</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* COLUMN 2: CENTER FORM EDITOR WORKSPACE (5 Cols on lg) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-soft-sm space-y-6">
+
+              {/* Personal Information Form */}
+              {activeSection === 'personal' && (
+                <div className="space-y-4">
+                  <div className="border-b border-slate-100 pb-3">
+                    <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                      <User className="w-4.5 h-4.5 text-[#5B4BFF]" /> Personal Information
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      Enter your primary contact info for hiring screeners
+                    </p>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    {/* Full Name */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Full Name *</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                          <User className="w-4 h-4" />
+                        </div>
                         <input
                           type="text"
                           value={formData.personalDetails.name}
                           onChange={(e) => handlePersonalChange('name', e.target.value)}
-                          placeholder="Alex Morgan"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-brand-500"
+                          placeholder="Chhavi Kumari"
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all"
                         />
                       </div>
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">Email Address</label>
+                    </div>
+
+                    {/* Email */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">Email Address *</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                          <Mail className="w-4 h-4" />
+                        </div>
                         <input
                           type="email"
                           value={formData.personalDetails.email}
                           onChange={(e) => handlePersonalChange('email', e.target.value)}
-                          placeholder="alex@example.com"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-brand-500"
+                          placeholder="chhavi@example.com"
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all"
                         />
                       </div>
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">Phone Number</label>
-                        <input
-                          type="text"
-                          value={formData.personalDetails.phone}
-                          onChange={(e) => handlePersonalChange('phone', e.target.value)}
-                          placeholder="+1 (555) 019-2831"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-brand-500"
-                        />
+                    </div>
+
+                    {/* Phone & Location Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-700">Phone Number</label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <Phone className="w-4 h-4" />
+                          </div>
+                          <input
+                            type="tel"
+                            value={formData.personalDetails.phone}
+                            onChange={(e) => handlePersonalChange('phone', e.target.value)}
+                            placeholder="+91 9876543210"
+                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">Location / Address</label>
-                        <input
-                          type="text"
-                          value={formData.personalDetails.address}
-                          onChange={(e) => handlePersonalChange('address', e.target.value)}
-                          placeholder="San Francisco, CA"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-brand-500"
-                        />
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-slate-700">Location</label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <MapPin className="w-4 h-4" />
+                          </div>
+                          <input
+                            type="text"
+                            value={formData.personalDetails.address}
+                            onChange={(e) => handlePersonalChange('address', e.target.value)}
+                            placeholder="Chandigarh, IN"
+                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">LinkedIn URL</label>
+                    </div>
+
+                    {/* LinkedIn & GitHub */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">LinkedIn Profile URL</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                          <Linkedin className="w-4 h-4" />
+                        </div>
                         <input
                           type="text"
                           value={formData.personalDetails.linkedin}
                           onChange={(e) => handlePersonalChange('linkedin', e.target.value)}
-                          placeholder="https://linkedin.com/in/alex"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-brand-500"
+                          placeholder="linkedin.com/in/chhavikumari"
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all"
                         />
                       </div>
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">GitHub URL</label>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">GitHub Profile URL</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                          <Github className="w-4 h-4" />
+                        </div>
                         <input
                           type="text"
                           value={formData.personalDetails.github}
                           onChange={(e) => handlePersonalChange('github', e.target.value)}
-                          placeholder="https://github.com/alex"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none focus:border-brand-500"
+                          placeholder="github.com/chhavikumari"
+                          className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all"
                         />
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* 2. Education */}
-                {activeSection === 'education' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-white">Education History</h3>
-                      <button
-                        onClick={addEducation}
-                        className="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Add College
-                      </button>
-                    </div>
-
-                    {formData.education.map((edu, idx) => (
-                      <div key={idx} className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3 relative">
-                        {formData.education.length > 1 && (
-                          <button
-                            onClick={() => removeEducation(idx)}
-                            className="absolute top-3 right-3 text-rose-400 hover:text-rose-300"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Degree</label>
-                            <input
-                              type="text"
-                              value={edu.degree}
-                              onChange={(e) => handleEduChange(idx, 'degree', e.target.value)}
-                              placeholder="B.S. in Computer Science"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">College / University</label>
-                            <input
-                              type="text"
-                              value={edu.college}
-                              onChange={(e) => handleEduChange(idx, 'college', e.target.value)}
-                              placeholder="State Tech University"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Graduation Year</label>
-                            <input
-                              type="text"
-                              value={edu.year}
-                              onChange={(e) => handleEduChange(idx, 'year', e.target.value)}
-                              placeholder="2020 - 2024"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">CGPA / Grade</label>
-                            <input
-                              type="text"
-                              value={edu.cgpa}
-                              onChange={(e) => handleEduChange(idx, 'cgpa', e.target.value)}
-                              placeholder="3.8 / 4.0"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+              {/* Summary Section Form */}
+              {activeSection === 'summary' && (
+                <div className="space-y-4">
+                  <div className="border-b border-slate-100 pb-3">
+                    <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                      <FileText className="w-4.5 h-4.5 text-[#5B4BFF]" /> Professional Summary
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      Write a brief 2-3 sentence overview highlighting your core strengths
+                    </p>
                   </div>
-                )}
 
-                {/* 3. Experience */}
-                {activeSection === 'experience' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-white">Work Experience</h3>
-                      <button
-                        onClick={addExperience}
-                        className="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Add Job
-                      </button>
+                  <textarea
+                    rows={6}
+                    value={formData.summary}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.value }))}
+                    placeholder="Proactive Full Stack Developer with hands-on experience in building scalable React, Node.js applications..."
+                    className="w-full p-4 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-2xl text-xs font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all leading-relaxed"
+                  />
+                </div>
+              )}
+
+              {/* Experience Form */}
+              {activeSection === 'experience' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <Briefcase className="w-4.5 h-4.5 text-[#5B4BFF]" /> Work Experience
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Add past positions with achievement bullet points
+                      </p>
                     </div>
+                    <button
+                      onClick={addExperience}
+                      className="px-3 py-1.5 text-xs font-bold text-[#5B4BFF] bg-[#5B4BFF]/10 rounded-xl hover:bg-[#5B4BFF]/20 flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Add Job
+                    </button>
+                  </div>
 
+                  <div className="space-y-4">
                     {formData.experience.map((exp, idx) => (
-                      <div key={idx} className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3 relative">
+                      <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3 relative">
                         {formData.experience.length > 1 && (
                           <button
                             onClick={() => removeExperience(idx)}
-                            className="absolute top-3 right-3 text-rose-400 hover:text-rose-300"
+                            className="absolute top-3 right-3 text-slate-400 hover:text-rose-600 transition-colors p-1"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Company Name</label>
-                            <input
-                              type="text"
-                              value={exp.company}
-                              onChange={(e) => handleExpChange(idx, 'company', e.target.value)}
-                              placeholder="TechCorp Labs"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Job Role / Title</label>
-                            <input
-                              type="text"
-                              value={exp.role}
-                              onChange={(e) => handleExpChange(idx, 'role', e.target.value)}
-                              placeholder="Full-Stack Engineer"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Start Date</label>
-                            <input
-                              type="text"
-                              value={exp.startDate}
-                              onChange={(e) => handleExpChange(idx, 'startDate', e.target.value)}
-                              placeholder="Jan 2023"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">End Date</label>
-                            <input
-                              type="text"
-                              value={exp.endDate}
-                              onChange={(e) => handleExpChange(idx, 'endDate', e.target.value)}
-                              placeholder="Present"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
+                          <input
+                            type="text"
+                            value={exp.company}
+                            onChange={(e) => handleExpChange(idx, 'company', e.target.value)}
+                            placeholder="Company Name (e.g. Stripe)"
+                            className="px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                          />
+                          <input
+                            type="text"
+                            value={exp.role}
+                            onChange={(e) => handleExpChange(idx, 'role', e.target.value)}
+                            placeholder="Job Title (e.g. Frontend Engineer)"
+                            className="px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                          />
                         </div>
-                        <div>
-                          <label className="text-[11px] font-medium text-slate-400">Role Description & Achievements</label>
-                          <textarea
-                            rows={3}
-                            value={exp.description}
-                            onChange={(e) => handleExpChange(idx, 'description', e.target.value)}
-                            placeholder="Architected React interfaces and Express backend REST APIs..."
-                            className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none resize-none"
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            type="text"
+                            value={exp.startDate}
+                            onChange={(e) => handleExpChange(idx, 'startDate', e.target.value)}
+                            placeholder="Start Date (Jun 2023)"
+                            className="px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                          />
+                          <input
+                            type="text"
+                            value={exp.endDate}
+                            onChange={(e) => handleExpChange(idx, 'endDate', e.target.value)}
+                            placeholder="End Date (Present)"
+                            className="px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                          />
+                        </div>
+
+                        <textarea
+                          rows={3}
+                          value={exp.description}
+                          onChange={(e) => handleExpChange(idx, 'description', e.target.value)}
+                          placeholder="Key responsibilities and quantitative achievements..."
+                          className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Education Form */}
+              {activeSection === 'education' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <GraduationCap className="w-4.5 h-4.5 text-[#5B4BFF]" /> Education
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Add degrees, universities, and graduation years
+                      </p>
+                    </div>
+                    <button
+                      onClick={addEducation}
+                      className="px-3 py-1.5 text-xs font-bold text-[#5B4BFF] bg-[#5B4BFF]/10 rounded-xl hover:bg-[#5B4BFF]/20 flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Add Degree
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {formData.education.map((edu, idx) => (
+                      <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3 relative">
+                        {formData.education.length > 1 && (
+                          <button
+                            onClick={() => removeEducation(idx)}
+                            className="absolute top-3 right-3 text-slate-400 hover:text-rose-600 transition-colors p-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        <input
+                          type="text"
+                          value={edu.degree}
+                          onChange={(e) => handleEduChange(idx, 'degree', e.target.value)}
+                          placeholder="Degree / Stream (e.g. B.Tech CS)"
+                          className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <input
+                            type="text"
+                            value={edu.college}
+                            onChange={(e) => handleEduChange(idx, 'college', e.target.value)}
+                            placeholder="College / University Name"
+                            className="px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                          />
+                          <input
+                            type="text"
+                            value={edu.year}
+                            onChange={(e) => handleEduChange(idx, 'year', e.target.value)}
+                            placeholder="Graduation Year (2020 - 2024)"
+                            className="px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
                           />
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* 4. Skills */}
-                {activeSection === 'skills' && (
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-white">Skills</h3>
+              {/* Skills Form */}
+              {activeSection === 'skills' && (
+                <div className="space-y-4">
+                  <div className="border-b border-slate-100 pb-3">
+                    <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                      <Code className="w-4.5 h-4.5 text-[#5B4BFF]" /> Skills & Tech Stack
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      Enter comma-separated skills to pre-fill ATS keyword tags
+                    </p>
+                  </div>
 
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">Technical Skills (comma separated)</label>
-                        <input
-                          type="text"
-                          value={Array.isArray(formData.skills?.technical) ? formData.skills.technical.join(', ') : (formData.skills?.technical || '')}
-                          onChange={(e) => handleSkillsChange('technical', e.target.value)}
-                          placeholder="React.js, Node.js, Express, MongoDB, TypeScript"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-medium text-slate-400">Soft Skills (comma separated)</label>
-                        <input
-                          type="text"
-                          value={Array.isArray(formData.skills?.soft) ? formData.skills.soft.join(', ') : (formData.skills?.soft || '')}
-                          onChange={(e) => handleSkillsChange('soft', e.target.value)}
-                          placeholder="Problem Solving, Communication, Team Leadership"
-                          className="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white outline-none"
-                        />
-                      </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-700">Technical Skills (Comma Separated)</label>
+                    <textarea
+                      rows={3}
+                      value={formData.skills.technical.join(', ')}
+                      onChange={(e) => handleSkillsChange('technical', e.target.value)}
+                      placeholder="React.js, Node.js, Express.js, MongoDB, JavaScript, TypeScript, Tailwind CSS"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 outline-none transition-all"
+                    />
+
+                    {/* Skill Pill Display */}
+                    <div className="flex flex-wrap gap-1.5 pt-2">
+                      {formData.skills.technical.map((sk, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 rounded-xl bg-[#5B4BFF]/10 text-[#5B4BFF] text-xs font-bold border border-[#5B4BFF]/20 flex items-center gap-1"
+                        >
+                          {sk}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* 5. Projects */}
-                {activeSection === 'projects' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-white">Projects</h3>
-                      <button
-                        onClick={addProject}
-                        className="text-xs font-semibold text-brand-400 hover:text-brand-300 flex items-center gap-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Add Project
-                      </button>
+              {/* Projects Form */}
+              {activeSection === 'projects' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <FolderKanban className="w-4.5 h-4.5 text-[#5B4BFF]" /> Projects & Portfolio
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Add key project links and technical descriptions
+                      </p>
                     </div>
+                    <button
+                      onClick={addProject}
+                      className="px-3 py-1.5 text-xs font-bold text-[#5B4BFF] bg-[#5B4BFF]/10 rounded-xl hover:bg-[#5B4BFF]/20 flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" /> Add Project
+                    </button>
+                  </div>
 
+                  <div className="space-y-4">
                     {formData.projects.map((proj, idx) => (
-                      <div key={idx} className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3 relative">
+                      <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3 relative">
                         {formData.projects.length > 1 && (
                           <button
                             onClick={() => removeProject(idx)}
-                            className="absolute top-3 right-3 text-rose-400 hover:text-rose-300"
+                            className="absolute top-3 right-3 text-slate-400 hover:text-rose-600 transition-colors p-1"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Project Name *</label>
-                            <input
-                              type="text"
-                              value={proj.name}
-                              onChange={(e) => handleProjectChange(idx, 'name', e.target.value)}
-                              placeholder="CareerForge Portal"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Project Link (Optional)</label>
-                            <input
-                              type="text"
-                              value={proj.link}
-                              onChange={(e) => handleProjectChange(idx, 'link', e.target.value)}
-                              placeholder="https://github.com/project"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">Start Date</label>
-                            <input
-                              type="text"
-                              value={proj.startDate || ''}
-                              onChange={(e) => handleProjectChange(idx, 'startDate', e.target.value)}
-                              placeholder="January 2026"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-[11px] font-medium text-slate-400">End Date (or 'Present')</label>
-                            <input
-                              type="text"
-                              value={proj.endDate || ''}
-                              onChange={(e) => handleProjectChange(idx, 'endDate', e.target.value)}
-                              placeholder="Present"
-                              className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-medium text-slate-400">Technologies Used</label>
-                          <input
-                            type="text"
-                            value={proj.technologies}
-                            onChange={(e) => handleProjectChange(idx, 'technologies', e.target.value)}
-                            placeholder="React, Express, MongoDB, Tailwind CSS"
-                            className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[11px] font-medium text-slate-400">Description</label>
-                          <textarea
-                            rows={2}
-                            value={proj.description}
-                            onChange={(e) => handleProjectChange(idx, 'description', e.target.value)}
-                            placeholder="Built smart ATS candidate screening portal..."
-                            className="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-white outline-none resize-none"
-                          />
-                        </div>
+                        <input
+                          type="text"
+                          value={proj.name}
+                          onChange={(e) => handleProjectChange(idx, 'name', e.target.value)}
+                          placeholder="Project Title (e.g. CareerForge Platform)"
+                          className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                        />
+                        <input
+                          type="text"
+                          value={proj.link}
+                          onChange={(e) => handleProjectChange(idx, 'link', e.target.value)}
+                          placeholder="Project URL (e.g. github.com/user/project)"
+                          className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                        />
+                        <textarea
+                          rows={2}
+                          value={proj.description}
+                          onChange={(e) => handleProjectChange(idx, 'description', e.target.value)}
+                          placeholder="Brief project description & features..."
+                          className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#5B4BFF]"
+                        />
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
+              )}
 
-              </div>
-            )}
+              {/* Certifications Form */}
+              {activeSection === 'certifications' && (
+                <div className="space-y-4">
+                  <div className="border-b border-slate-100 pb-3">
+                    <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                      <Award className="w-4.5 h-4.5 text-[#5B4BFF]" /> Certifications & Badges
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      Include professional credentials and certifications
+                    </p>
+                  </div>
 
+                  <div className="space-y-3">
+                    {formData.certifications.map((c, idx) => (
+                      <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                        <input
+                          type="text"
+                          value={c.title}
+                          onChange={(e) => {
+                            const updated = [...formData.certifications];
+                            updated[idx].title = e.target.value;
+                            setFormData((prev) => ({ ...prev, certifications: updated }));
+                          }}
+                          placeholder="Certification Title (AWS Cloud)"
+                          className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-900"
+                        />
+                        <input
+                          type="text"
+                          value={c.issuer}
+                          onChange={(e) => {
+                            const updated = [...formData.certifications];
+                            updated[idx].issuer = e.target.value;
+                            setFormData((prev) => ({ ...prev, certifications: updated }));
+                          }}
+                          placeholder="Issuing Authority (Amazon)"
+                          className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-900"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
 
-          {/* Right Live Resume Preview & Template Controls */}
-          <div className="lg:col-span-6 space-y-6">
+          {/* COLUMN 3: RIGHT REALISTIC A4 PAPER DOCUMENT PREVIEW (4 Cols on lg) */}
+          <div className="lg:col-span-4 space-y-4">
             
-            {/* Template Selector Controls */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-brand-400" />
-                <span className="text-xs font-bold text-white">ATS Template:</span>
-              </div>
+            {/* Toolbar Controls */}
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-3 shadow-soft-sm flex items-center justify-between">
+              <span className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-[#5B4BFF]" /> Live A4 Sheet
+              </span>
 
               <div className="flex items-center gap-2">
-                {[
-                  { id: 'modern', name: 'Modern' },
-                  { id: 'classic', name: 'Classic' },
-                  { id: 'minimal', name: 'Minimal' },
-                ].map((t) => (
+                {/* Zoom Controls */}
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
                   <button
-                    key={t.id}
-                    onClick={() => setSelectedTemplate(t.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      selectedTemplate === t.id
-                        ? 'bg-brand-600 text-white shadow-md'
-                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
-                    }`}
+                    onClick={() => setZoomLevel((prev) => Math.max(75, prev - 10))}
+                    className="p-1 text-slate-600 hover:text-slate-900 cursor-pointer"
+                    title="Zoom Out"
                   >
-                    {t.name}
+                    <ZoomOut className="w-3.5 h-3.5" />
                   </button>
-                ))}
+                  <span className="text-[11px] font-bold text-slate-700 px-1">{zoomLevel}%</span>
+                  <button
+                    onClick={() => setZoomLevel((prev) => Math.min(125, prev + 10))}
+                    className="p-1 text-slate-600 hover:text-slate-900 cursor-pointer"
+                    title="Zoom In"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Fullscreen Toggle */}
+                <button
+                  onClick={() => setFullscreenPreview(true)}
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all cursor-pointer"
+                  title="Fullscreen Preview"
+                >
+                  <Maximize2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            {/* Live Render Preview Box */}
-            <div ref={previewRef} className="print:p-0">
-              {selectedTemplate === 'classic' && <ClassicTemplate data={formData} />}
-              {selectedTemplate === 'modern' && <ModernTemplate data={formData} />}
-              {selectedTemplate === 'minimal' && <MinimalTemplate data={formData} />}
+            {/* REALISTIC PRINTABLE A4 PAPER CONTAINER */}
+            <div className="overflow-x-auto pb-4">
+              <div
+                style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
+                className="transition-transform duration-200"
+              >
+                <div className="w-[210mm] min-h-[297mm] bg-white shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-200/80 mx-auto font-sans leading-relaxed text-slate-900">
+                  {renderSelectedTemplate()}
+                </div>
+              </div>
             </div>
 
           </div>
@@ -857,6 +938,42 @@ const ResumeBuilderPage = () => {
         </div>
 
       </div>
+
+      {/* FULLSCREEN PREVIEW MODAL */}
+      {fullscreenPreview && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md p-4 sm:p-8 flex flex-col items-center justify-center overflow-y-auto">
+          <div className="w-full max-w-5xl flex items-center justify-between text-white mb-4">
+            <span className="text-sm font-extrabold flex items-center gap-2">
+              <Eye className="w-4 h-4 text-[#5B4BFF]" /> Printable A4 Resume Fullscreen View
+            </span>
+            <button
+              onClick={() => setFullscreenPreview(false)}
+              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="w-[210mm] min-h-[297mm] bg-white shadow-2xl rounded-sm p-10 border border-slate-200 font-sans text-slate-900 my-auto">
+            {renderSelectedTemplate()}
+          </div>
+        </div>
+      )}
+
+      {/* TEMPLATE GALLERY MODAL */}
+      <TemplateGalleryModal
+        isOpen={templateModalOpen}
+        onClose={() => setTemplateModalOpen(false)}
+        selectedTemplate={selectedTemplate}
+        onSelectTemplate={(tmplId) => setSelectedTemplate(tmplId)}
+      />
+
+      {/* PDF EXPORT CONFIRMATION MODAL */}
+      <ExportModal
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        onConfirmDownload={triggerPDFDownload}
+        templateName={selectedTemplate.toUpperCase()}
+      />
     </DashboardLayout>
   );
 };
