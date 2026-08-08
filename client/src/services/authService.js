@@ -20,6 +20,11 @@ export const getCurrentUser = async () => {
   return response.data;
 };
 
+export const updateUserProfile = async (profileData) => {
+  const response = await api.put('/auth/profile', profileData);
+  return response.data;
+};
+
 export const requestForgotPassword = async (email) => {
   const response = await api.post('/auth/forgot-password', { email });
   return response.data;

@@ -7,6 +7,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const savedJobRoutes = require('./routes/savedJobRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 const seedAdminAccount = require('./utils/seedAdmin');
 const seedJobs = require('./utils/seedJobs');
@@ -51,6 +52,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/saved-jobs', savedJobRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

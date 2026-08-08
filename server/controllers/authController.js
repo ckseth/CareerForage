@@ -157,6 +157,47 @@ const getMe = async (req, res, next) => {
   }
 };
 
+// @desc    Update logged in user profile (name, phone, location, profileImage)
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    const { name, phone, location, profileImage } = req.body;
+    if (name !== undefined) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (location !== undefined) user.location = location;
+    if (profileImage !== undefined) user.profileImage = profileImage;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        location: user.location,
+        profileImage: user.profileImage,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Request password reset email
 // @route   POST /api/auth/forgot-password
 // @access  Public
@@ -282,6 +323,7 @@ module.exports = {
   loginUser,
   logoutUser,
   getMe,
+  updateUserProfile,
   forgotPassword,
   resetPassword,
 };

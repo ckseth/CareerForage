@@ -135,20 +135,6 @@ export const ClassicTemplate = ({ data = {} }) => {
                   {duration && <span className="font-sans text-[11px] text-slate-500 font-normal">{duration}</span>}
                 </div>
                 
-                {/* Row 2: Clickable Project Link */}
-                {proj.link && (
-                  <p className="font-sans text-[11px]">
-                    <a
-                      href={formatUrl(proj.link)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-indigo-600 underline hover:text-indigo-800 break-all"
-                    >
-                      {proj.link}
-                    </a>
-                  </p>
-                )}
-                
                 {/* Description */}
                 {proj.description && (
                   <p className="font-sans text-[11px] text-slate-700 leading-relaxed pt-1">{proj.description}</p>
@@ -328,20 +314,6 @@ export const ModernTemplate = ({ data = {} }) => {
                   {duration && <span className="text-[11px] text-slate-500 font-medium">{duration}</span>}
                 </div>
                 
-                {/* Row 2: Clickable Project Link */}
-                {proj.link && (
-                  <p className="text-[11px]">
-                    <a
-                      href={formatUrl(proj.link)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-indigo-600 underline hover:text-indigo-800 break-all font-medium"
-                    >
-                      {proj.link}
-                    </a>
-                  </p>
-                )}
-                
                 {/* Description */}
                 {proj.description && <p className="text-[11px] text-slate-700 leading-relaxed pt-1">{proj.description}</p>}
                 
@@ -502,20 +474,6 @@ export const MinimalTemplate = ({ data = {} }) => {
                   <h3 className="font-black uppercase tracking-wider text-black text-xs">{proj.name}</h3>
                   {duration && <span className="font-mono text-[10px] text-slate-600">{duration}</span>}
                 </div>
-                
-                {/* Row 2: Clickable Project Link */}
-                {proj.link && (
-                  <p className="text-[11px]">
-                    <a
-                      href={formatUrl(proj.link)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-black underline font-mono text-[10px] hover:text-indigo-600 break-all"
-                    >
-                      {proj.link}
-                    </a>
-                  </p>
-                )}
                 
                 {/* Description */}
                 {proj.description && <p className="text-[11px] text-slate-800 leading-relaxed pt-0.5">{proj.description}</p>}

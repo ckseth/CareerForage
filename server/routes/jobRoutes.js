@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getJobs,
   getJobById,
+  getMyJobs,
   createJob,
   updateJob,
   deleteJob,
@@ -11,6 +12,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
 router.get('/', getJobs);
+router.get('/my-jobs', protect, authorize('recruiter', 'admin'), getMyJobs);
 router.get('/:id', getJobById);
 
 router.post('/', protect, authorize('recruiter', 'admin'), createJob);

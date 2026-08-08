@@ -185,9 +185,30 @@ const deleteJob = async (req, res, next) => {
   }
 };
 
+// @desc    Get jobs posted by logged in recruiter
+// @route   GET /api/jobs/my-jobs
+// @access  Private (Recruiter / Admin)
+const getMyJobs = async (req, res, next) => {
+  try {
+    let query = {};
+    if (req.user.role === 'recruiter') {
+      query = { postedBy: req.user._id };
+    }
+    const jobs = await Job.find(query).sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      count: jobs.length,
+      jobs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getJobs,
   getJobById,
+  getMyJobs,
   createJob,
   updateJob,
   deleteJob,

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchMyResumes, saveResume, analyzeResumeData } from '../services/jobService';
+import { updateUserProfile } from '../services/authService';
 import { parseResumeText } from '../utils/resumeParser';
 import { ClassicTemplate, ModernTemplate, MinimalTemplate } from '../components/resume/ResumeTemplates';
 import ExportModal from '../components/resume/ExportModal';
 import TemplateGalleryModal from '../components/resume/TemplateGalleryModal';
 import ResumeNavDrawer from '../components/resume/ResumeNavDrawer';
+import ImageCropModal from '../components/common/ImageCropModal';
 import { toast } from 'react-hot-toast';
 import {
   FileText,
@@ -47,7 +49,11 @@ const ResumeBuilderPage = () => {
   const fileInputRef = useRef();
   const profileImgInputRef = useRef();
 
-  // Profile Picture Upload Handler
+  // Crop Modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [rawImageForCrop, setRawImageForCrop] = useState('');
+
+  // Profile Picture Upload Handler (Triggers Crop Modal)
   const handleProfilePictureUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -60,15 +66,30 @@ const ResumeBuilderPage = () => {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      handlePersonalChange('profileImage', event.target.result);
-      toast.success('Profile picture updated successfully!');
+      setRawImageForCrop(event.target.result);
+      setCropModalOpen(true);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleRemoveProfilePicture = () => {
+  const handleCropSave = async (croppedBase64) => {
+    handlePersonalChange('profileImage', croppedBase64);
+    try {
+      await updateUserProfile({ profileImage: croppedBase64 });
+      toast.success('Profile picture saved & synced with your account!');
+    } catch (err) {
+      toast.success('Profile picture updated!');
+    }
+  };
+
+  const handleRemoveProfilePicture = async () => {
     handlePersonalChange('profileImage', '');
-    toast.success('Profile picture removed');
+    try {
+      await updateUserProfile({ profileImage: '' });
+      toast.success('Profile picture removed');
+    } catch (err) {
+      toast.success('Profile picture removed');
+    }
   };
 
   // Navigation Drawer state
@@ -956,20 +977,51 @@ const ResumeBuilderPage = () => {
                         placeholder="Project Title (CareerForge Smart Platform)"
                         className="w-full px-3.5 py-3 bg-white border border-[#E4E7EC] focus:border-[#4169FF] rounded-xl text-xs font-semibold text-slate-900 outline-none"
                       />
-                      <input
-                        type="text"
-                        value={proj.link}
-                        onChange={(e) => handleProjectChange(idx, 'link', e.target.value)}
-                        placeholder="Project URL (github.com/user/project)"
-                        className="w-full px-3.5 py-3 bg-white border border-[#E4E7EC] focus:border-[#4169FF] rounded-xl text-xs font-semibold text-slate-900 outline-none"
-                      />
-                      <textarea
-                        rows={2}
-                        value={proj.description}
-                        onChange={(e) => handleProjectChange(idx, 'description', e.target.value)}
-                        placeholder="Project description & key technical details..."
-                        className="w-full p-3 bg-white border border-[#E4E7EC] focus:border-[#4169FF] rounded-xl text-xs font-semibold text-slate-900 outline-none"
-                      />
+                      
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-700">Project Description</label>
+                        <textarea
+                          rows={2}
+                          value={proj.description}
+                          onChange={(e) => handleProjectChange(idx, 'description', e.target.value)}
+                          placeholder="Project description & key technical details..."
+                          className="w-full p-3 bg-white border border-[#E4E7EC] focus:border-[#4169FF] rounded-xl text-xs font-semibold text-slate-900 outline-none"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-slate-700">Technical Skills / Technologies</label>
+                        <input
+                          type="text"
+                          value={proj.technologies}
+                          onChange={(e) => handleProjectChange(idx, 'technologies', e.target.value)}
+                          placeholder="React, Node.js, Express, MongoDB"
+                          className="w-full px-3.5 py-2.5 bg-white border border-[#E4E7EC] focus:border-[#4169FF] rounded-xl text-xs font-semibold text-slate-900 outline-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 pt-1">
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-700">Start Date</label>
+                          <input
+                            type="text"
+                            value={proj.startDate}
+                            onChange={(e) => handleProjectChange(idx, 'startDate', e.target.value)}
+                            placeholder="Jan 2024"
+                            className="w-full px-3 py-2 bg-white border border-[#E4E7EC] focus:border-[#4169FF] rounded-xl text-xs font-semibold text-slate-900 outline-none"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[11px] font-bold text-slate-700">End Date</label>
+                          <input
+                            type="text"
+                            value={proj.endDate}
+                            onChange={(e) => handleProjectChange(idx, 'endDate', e.target.value)}
+                            placeholder="Jun 2024"
+                            className="w-full px-3 py-2 bg-white border border-[#E4E7EC] focus:border-[#4169FF] rounded-xl text-xs font-semibold text-slate-900 outline-none"
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1160,6 +1212,36 @@ const ResumeBuilderPage = () => {
           </div>
         </div>
       )}
+
+      {/* IMAGE CROP & ZOOM MODAL */}
+      <ImageCropModal
+        isOpen={cropModalOpen}
+        onClose={() => setCropModalOpen(false)}
+        imageSrc={rawImageForCrop}
+        onCropSave={handleCropSave}
+      />
+
+      {/* PRINT MEDIA STYLES — Hides UI controls and prints ONLY the A4 Paper Sheet */}
+      <style>{`
+        @media print {
+          header, section#resume-editor-section > div > div:first-child, section:first-of-type, nav, footer, button, .no-print {
+            display: none !important;
+          }
+          body, html, #root {
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .aspect-\\[210\\/297\\] {
+            box-shadow: none !important;
+            border: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+        }
+      `}</style>
 
     </div>
   );

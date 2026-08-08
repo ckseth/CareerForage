@@ -2,9 +2,10 @@ const User = require('../models/User');
 
 const seedAdminAccount = async () => {
   try {
-    const adminExists = await User.findOne({ role: 'admin' });
+    // 1. Seed Admin Account
+    const adminExists = await User.findOne({ email: 'admin@careerforge.com' });
     if (!adminExists) {
-      const admin = await User.create({
+      await User.create({
         name: 'System Admin',
         email: 'admin@careerforge.com',
         password: 'AdminPassword123!',
@@ -13,12 +14,40 @@ const seedAdminAccount = async () => {
         location: 'San Francisco, CA',
         isVerified: true,
       });
-      console.log(`[Admin Seed] Admin account initialized successfully: ${admin.email}`);
-    } else {
-      console.log(`[Admin Seed] Admin account already exists: ${adminExists.email}`);
+      console.log(`[Demo Seed] Admin account initialized: admin@careerforge.com`);
+    }
+
+    // 2. Seed Recruiter Account
+    const recruiterExists = await User.findOne({ email: 'recruiter@careerforge.com' });
+    if (!recruiterExists) {
+      await User.create({
+        name: 'Global Recruiter',
+        email: 'recruiter@careerforge.com',
+        password: 'Recruiter123!',
+        role: 'recruiter',
+        phone: '+91 9876543210',
+        location: 'Bengaluru, India',
+        isVerified: true,
+      });
+      console.log(`[Demo Seed] Recruiter account initialized: recruiter@careerforge.com`);
+    }
+
+    // 3. Seed Job Seeker Account
+    const seekerExists = await User.findOne({ email: 'seeker@careerforge.com' });
+    if (!seekerExists) {
+      await User.create({
+        name: 'Chhavi Kumari',
+        email: 'seeker@careerforge.com',
+        password: 'Seeker123!',
+        role: 'jobseeker',
+        phone: '+91 6204022479',
+        location: 'Kharar, India',
+        isVerified: true,
+      });
+      console.log(`[Demo Seed] Job Seeker account initialized: seeker@careerforge.com`);
     }
   } catch (error) {
-    console.error(`[Admin Seed Error] ${error.message}`);
+    console.error(`[Demo Seed Error] ${error.message}`);
   }
 };
 

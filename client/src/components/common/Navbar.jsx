@@ -76,6 +76,26 @@ const Navbar = () => {
                 <LayoutDashboard className="w-4 h-4 text-white" />
                 Dashboard
               </Link>
+              {user?.profileImage ? (
+                <img
+                  src={user.profileImage}
+                  alt={user?.name || 'User Profile'}
+                  className="w-9 h-9 rounded-xl object-cover border border-[#5B4BFF]/30 shadow-xs"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    if (e.target.parentElement) {
+                      const div = document.createElement('div');
+                      div.className = 'w-9 h-9 rounded-xl bg-[#5B4BFF]/10 text-[#5B4BFF] font-black text-xs flex items-center justify-center border border-[#5B4BFF]/20';
+                      div.innerText = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
+                      e.target.parentElement.appendChild(div);
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-[#5B4BFF]/10 text-[#5B4BFF] font-black text-xs flex items-center justify-center border border-[#5B4BFF]/20">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
               <button
                 onClick={logout}
                 className="px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-slate-200 cursor-pointer"
