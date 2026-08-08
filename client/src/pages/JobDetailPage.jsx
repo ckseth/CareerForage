@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import DashboardLayout from '../layouts/DashboardLayout';
 import { fetchJobById, fetchMyResumes, submitApplication } from '../services/jobService';
 import { useAuth } from '../hooks/useAuth';
+import { formatINR } from '../utils/formatters';
 import { toast } from 'react-hot-toast';
 import {
   MapPin,
@@ -169,7 +170,7 @@ const JobDetailPage = () => {
             <div className="space-y-1">
               <span className="text-slate-500 font-medium">Salary Range</span>
               <p className="font-bold text-emerald-400 flex items-center gap-1">
-                <DollarSign className="w-3.5 h-3.5 text-emerald-400" /> {job.salary}
+                <span className="text-emerald-400 font-extrabold text-sm shrink-0">₹</span> {formatINR(job.salary)}
               </p>
             </div>
             <div className="space-y-1">

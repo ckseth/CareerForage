@@ -7,34 +7,50 @@ const getJobs = async (req, res, next) => {
   try {
     const { keyword, jobType, location, experience } = req.query;
 
-    let query = { isActive: true };
+    const conditions = [{ isActive: true }];
 
     // Search keyword filter (title, company, description, skills)
     if (keyword && keyword.trim() !== '') {
       const searchRegex = new RegExp(keyword.trim(), 'i');
-      query.$or = [
-        { title: searchRegex },
-        { company: searchRegex },
-        { description: searchRegex },
-        { skills: searchRegex },
-      ];
+      conditions.push({
+        $or: [
+          { title: searchRegex },
+          { company: searchRegex },
+          { description: searchRegex },
+          { skills: searchRegex },
+        ],
+      });
     }
 
     // Job type filter (Full-time, Part-time, Remote, Contract, Internship)
     if (jobType && jobType !== 'All') {
-      query.jobType = jobType;
+      const norm = jobType.trim().toLowerCase();
+      if (norm === 'remote') {
+        conditions.push({
+          $or: [
+            { jobType: new RegExp('remote', 'i') },
+            { location: new RegExp('remote', 'i') },
+          ],
+        });
+      } else {
+        const regexPattern = norm.replace(/[\s_]+/g, '[-_ ]?');
+        conditions.push({
+          jobType: new RegExp(regexPattern, 'i'),
+        });
+      }
     }
 
     // Location filter
     if (location && location.trim() !== '') {
-      query.location = new RegExp(location.trim(), 'i');
+      conditions.push({ location: new RegExp(location.trim(), 'i') });
     }
 
     // Experience level filter
     if (experience && experience !== 'All') {
-      query.experience = new RegExp(experience.trim(), 'i');
+      conditions.push({ experience: new RegExp(experience.trim(), 'i') });
     }
 
+    const query = conditions.length > 1 ? { $and: conditions } : conditions[0];
     const jobs = await Job.find(query).sort({ createdAt: -1 });
 
     res.status(200).json({

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { fetchMyApplications } from '../services/jobService';
 import { CardSkeleton } from '../components/common/SkeletonLoader';
+import { formatINR } from '../utils/formatters';
 import {
   Briefcase,
   Clock,
@@ -197,7 +198,7 @@ const MyApplicationsPage = () => {
                     <div>
                       <span className="text-slate-500">Salary Range:</span>
                       <p className="font-semibold text-emerald-400 mt-0.5">
-                        {jobData.salary || 'N/A'}
+                        {formatINR(jobData.salary)}
                       </p>
                     </div>
                     <div>

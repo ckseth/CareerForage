@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { fetchSavedJobs, removeSavedJob } from '../services/jobService';
 import { CardSkeleton } from '../components/common/SkeletonLoader';
+import { formatINR } from '../utils/formatters';
 import { toast } from 'react-hot-toast';
 import {
   Bookmark,
@@ -142,8 +143,8 @@ const SavedJobsPage = () => {
                       <span className="truncate">{job.location}</span>
                     </div>
                     <div className="flex items-center gap-2 font-semibold text-slate-200">
-                      <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>{job.salary}</span>
+                      <span className="text-emerald-400 font-extrabold text-sm shrink-0">₹</span>
+                      <span>{formatINR(job.salary)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-slate-500 text-[11px]">
                       <Clock className="w-3.5 h-3.5 text-slate-600 shrink-0" />

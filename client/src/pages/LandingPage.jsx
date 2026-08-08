@@ -37,7 +37,7 @@ const LandingPage = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-12 pb-20 sm:pt-20 sm:pb-28 overflow-hidden bg-gradient-to-b from-white via-slate-50 to-indigo-50/20">
+      <section className="relative pt-6 pb-16 sm:pt-8 sm:pb-24 overflow-hidden bg-gradient-to-b from-white via-slate-50 to-indigo-50/20">
 
         {/* Soft Decorative Gradient Blobs */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-gradient-to-tr from-indigo-200/40 via-purple-200/30 to-cyan-200/20 rounded-full blur-3xl pointer-events-none" />
