@@ -6,28 +6,58 @@
   body {
     background-color: #F7F8FC;
     color: #111827;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
   }
 }
 
 @layer utilities {
   .glass-card {
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid #E5E7EB;
   }
 
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500;
+    background: linear-gradient(135deg, #5B4BFF 0%, #7C5CFC 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .text-gradient-coral {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-coral-500 via-rose-500 to-amber-500;
+    background: linear-gradient(135deg, #FF6B4A 0%, #FF8A65 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
-  .btn-gradient-indigo {
-    @apply bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-200;
+  .btn-gradient-brand {
+    background: linear-gradient(135deg, #5B4BFF 0%, #7C5CFC 100%);
+    color: #FFFFFF;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 14px 0 rgba(91, 75, 255, 0.25);
+    transition: all 0.2s ease;
+  }
+
+  .btn-gradient-brand:hover {
+    background: linear-gradient(135deg, #4F3EF5 0%, #6B49F7 100%);
+    box-shadow: 0 6px 20px 0 rgba(91, 75, 255, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .btn-gradient-coral {
+    background: linear-gradient(135deg, #FF6B4A 0%, #FF8A65 100%);
+    color: #FFFFFF;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 14px 0 rgba(255, 107, 74, 0.25);
+    transition: all 0.2s ease;
+  }
+
+  .btn-gradient-coral:hover {
+    background: linear-gradient(135deg, #F05330 0%, #FF7850 100%);
+    box-shadow: 0 6px 20px 0 rgba(255, 107, 74, 0.35);
+    transform: translateY(-1px);
   }
 }
 

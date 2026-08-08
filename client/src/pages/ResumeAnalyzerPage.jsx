@@ -79,7 +79,7 @@ const ResumeAnalyzerPage = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">ATS Resume Analyzer & Matcher</h1>
-              <Cpu className="w-5 h-5 text-blue-600" />
+              <Cpu className="w-5 h-5 text-[#5B4BFF]" />
             </div>
             <p className="text-xs text-slate-500 mt-1 font-medium">
               Analyze your resume text against automated HR screening algorithms to maximize interview callbacks
@@ -87,16 +87,16 @@ const ResumeAnalyzerPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+            <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-[#5B4BFF]/10 text-[#5B4BFF] border border-[#5B4BFF]/20">
               AI HR Engine Active
             </span>
           </div>
         </div>
 
         {/* Upload & Dropzone Area */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-xs space-y-6">
-          <div className="border-2 border-dashed border-slate-200 hover:border-blue-500 rounded-2xl p-8 text-center space-y-3 bg-slate-50/50 transition-colors">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-soft-sm space-y-6">
+          <div className="border-2 border-dashed border-slate-200 hover:border-[#5B4BFF] rounded-2xl p-8 text-center space-y-3 bg-slate-50/50 transition-colors">
+            <div className="w-14 h-14 rounded-2xl bg-[#5B4BFF]/10 text-[#5B4BFF] flex items-center justify-center mx-auto shadow-xs">
               <Upload className="w-7 h-7" />
             </div>
             <div>
@@ -122,18 +122,18 @@ const ResumeAnalyzerPage = () => {
 
           {/* Paste Text Fallback */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-700">Or Paste Resume Content / Skills Below:</label>
+            <label className="text-xs font-bold text-slate-700">Or Paste Resume Content / Skills Below:</label>
             <textarea
               rows={4}
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
               placeholder="Paste full resume text or technical skills (React, Node.js, Express, MongoDB, REST APIs)..."
-              className="w-full p-3 bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl text-xs text-slate-900 placeholder-slate-400 outline-none transition-all"
+              className="w-full p-3.5 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-2xl text-xs text-slate-900 placeholder-slate-400 outline-none transition-all"
             />
             <button
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="w-full py-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 text-xs font-bold text-white btn-gradient-brand flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {analyzing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Cpu className="w-4 h-4" />}
               Calculate ATS Score & Analyze Resume
@@ -146,11 +146,11 @@ const ResumeAnalyzerPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* Left: Overall ATS Score Meter Card */}
-            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-8 shadow-xs text-center space-y-6">
-              <h3 className="text-base font-bold text-slate-900">Overall ATS Pass Score</h3>
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-3xl p-8 shadow-soft-sm text-center space-y-6">
+              <h3 className="text-base font-extrabold text-slate-900">Overall ATS Pass Score</h3>
               
               <div className="relative w-40 h-40 mx-auto flex items-center justify-center">
-                <div className="w-36 h-36 rounded-full border-8 border-slate-100 border-t-blue-600 border-r-blue-600 flex flex-col items-center justify-center shadow-xs">
+                <div className="w-36 h-36 rounded-full border-8 border-slate-100 border-t-[#5B4BFF] border-r-[#5B4BFF] flex flex-col items-center justify-center shadow-xs">
                   <span className="text-4xl font-black text-slate-900">{analysisResult.atsScore}</span>
                   <span className="text-[10px] text-slate-400 font-bold uppercase">Out of 100</span>
                 </div>

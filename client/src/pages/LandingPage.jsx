@@ -52,11 +52,11 @@ const LandingPage = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 shadow-xs"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#5B4BFF]/10 border border-[#5B4BFF]/20 shadow-xs"
               >
-                <Sparkles className="w-4 h-4 text-indigo-600" />
-                <span className="text-xs font-bold text-indigo-700 tracking-wide uppercase">
-                  AI Job Portal & ATS Resume Platform
+                <Sparkles className="w-4 h-4 text-[#5B4BFF]" />
+                <span className="text-xs font-bold text-[#5B4BFF] tracking-wide uppercase">
+                  Smart Career Platform
                 </span>
               </motion.div>
 
@@ -66,9 +66,9 @@ const LandingPage = () => {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 leading-[1.1]"
               >
-                Build a Career You're <br />
+                Build Your Career. <br />
                 <span className="text-gradient">
-                  Confident About.
+                  Find Your Next Opportunity.
                 </span>
               </motion.h1>
 
@@ -89,19 +89,19 @@ const LandingPage = () => {
                 className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2"
               >
                 <Link
-                  to={isAuthenticated ? "/resume-builder" : "/signup"}
-                  className="w-full sm:w-auto px-8 py-4 text-sm font-bold text-white btn-gradient-indigo flex items-center justify-center gap-3 transform hover:-translate-y-0.5"
+                  to="/jobs"
+                  className="w-full sm:w-auto px-8 py-4 text-sm font-bold text-white btn-gradient-brand flex items-center justify-center gap-3"
                 >
-                  <FileText className="w-5 h-5" />
-                  Build My Resume
+                  <Briefcase className="w-5 h-5" />
+                  Find Jobs
                 </Link>
 
                 <Link
-                  to="/jobs"
+                  to={isAuthenticated ? "/resume-builder" : "/signup"}
                   className="w-full sm:w-auto px-8 py-4 text-sm font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2"
                 >
-                  <Briefcase className="w-5 h-5 text-indigo-600" />
-                  Explore Jobs
+                  <FileText className="w-5 h-5 text-[#5B4BFF]" />
+                  Build Resume
                 </Link>
               </motion.div>
 
@@ -144,12 +144,12 @@ const LandingPage = () => {
                   {/* Header Mock */}
                   <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white font-black text-lg flex items-center justify-center shadow-sm">
+                      <div className="w-12 h-12 rounded-2xl bg-[#5B4BFF] text-white font-black text-lg flex items-center justify-center shadow-sm">
                         CK
                       </div>
                       <div>
                         <h3 className="font-extrabold text-slate-900 text-base">Chhavi Kumari</h3>
-                        <p className="text-xs text-indigo-600 font-semibold">Full Stack MERN Developer</p>
+                        <p className="text-xs text-[#5B4BFF] font-semibold">Full Stack MERN Developer</p>
                       </div>
                     </div>
 
@@ -163,7 +163,7 @@ const LandingPage = () => {
                     <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Core Technical Skills</p>
                     <div className="flex flex-wrap gap-1.5">
                       {['React.js', 'Node.js', 'Express.js', 'MongoDB', 'JavaScript', 'Tailwind CSS'].map((sk, i) => (
-                        <span key={i} className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-900 font-semibold text-[11px] border border-indigo-100">
+                        <span key={i} className="px-2.5 py-1 rounded-lg bg-[#5B4BFF]/10 text-[#5B4BFF] font-semibold text-[11px] border border-[#5B4BFF]/20">
                           {sk}
                         </span>
                       ))}
@@ -178,7 +178,7 @@ const LandingPage = () => {
                         <span className="font-extrabold text-xs text-slate-900">TECHCORP SOLUTIONS</span>
                         <span className="text-[10px] text-slate-500 font-semibold">Jun 2023 – Present</span>
                       </div>
-                      <p className="text-[11px] font-semibold text-indigo-600">Software Engineering Intern</p>
+                      <p className="text-[11px] font-semibold text-[#5B4BFF]">Software Engineering Intern</p>
                       <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
                         Architected responsive React.js UI components and optimized Express.js REST API endpoints...
                       </p>
@@ -186,48 +186,48 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                {/* Floating Card 1: ATS Score */}
+                {/* Floating Card 1: 94% ATS Match */}
                 <motion.div
                   animate={{ y: [0, -8, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                   className="absolute -top-6 -right-4 sm:-right-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-xl z-20 flex items-center gap-3"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-black text-sm">
-                    94
+                  <div className="w-10 h-10 rounded-xl bg-[#5B4BFF]/10 border border-[#5B4BFF]/20 flex items-center justify-center text-[#5B4BFF] font-black text-sm">
+                    94%
                   </div>
                   <div>
-                    <p className="text-xs font-extrabold text-slate-900">ATS Score</p>
-                    <p className="text-[10px] text-emerald-600 font-bold">94 / 100 • Excellent Match</p>
+                    <p className="text-xs font-extrabold text-slate-900">94% ATS Match</p>
+                    <p className="text-[10px] text-emerald-600 font-bold">Passed Automated Screener</p>
                   </div>
                 </motion.div>
 
-                {/* Floating Card 2: Job Match 96% */}
+                {/* Floating Card 2: 24 New Job Matches */}
                 <motion.div
                   animate={{ y: [0, 8, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
                   className="absolute -bottom-6 -left-4 sm:-left-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-xl z-20 flex items-center gap-3"
                 >
                   <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 font-black text-sm">
-                    96%
+                    24
                   </div>
                   <div>
-                    <p className="text-xs font-extrabold text-slate-900">Job Match</p>
-                    <p className="text-[10px] text-slate-500 font-medium">96% React Developer</p>
+                    <p className="text-xs font-extrabold text-slate-900">24 New Job Matches</p>
+                    <p className="text-[10px] text-slate-500 font-medium">Matched to Your Profile</p>
                   </div>
                 </motion.div>
 
-                {/* Floating Card 3: Applications Status */}
+                {/* Floating Card 3: Resume Score 94/100 */}
                 <motion.div
                   animate={{ x: [0, 6, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
                   className="absolute top-1/2 -right-8 hidden sm:flex bg-white border border-slate-200 rounded-2xl p-3.5 shadow-xl z-20 items-center gap-2.5"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold text-xs">
-                    12
+                  <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-xs">
+                    94
                   </div>
                   <div className="text-left">
-                    <p className="text-[11px] font-extrabold text-slate-900">Applications</p>
-                    <p className="text-[9px] text-indigo-600 font-semibold">3 Under Review</p>
+                    <p className="text-[11px] font-extrabold text-slate-900">Resume Score</p>
+                    <p className="text-[9px] text-[#5B4BFF] font-semibold">94/100 Quality Score</p>
                   </div>
                 </motion.div>
 

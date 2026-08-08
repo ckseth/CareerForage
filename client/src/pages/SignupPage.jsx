@@ -20,6 +20,7 @@ import {
   Bot
 } from 'lucide-react';
 import Navbar from '../components/common/Navbar';
+import PasswordStrength from '../components/common/PasswordStrength';
 
 // Signup page
 const authImagePrimary = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1000&auto=format&fit=crop";
@@ -270,7 +271,14 @@ const SignupPage = () => {
 
                 {/* Email */}
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Email address *</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700">Email address *</label>
+                    {email && (
+                      <span className={`text-[10px] font-semibold ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'text-emerald-600' : 'text-rose-500'}`}>
+                        {/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '✓ Valid Email' : 'Invalid email format'}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <Mail className="w-4 h-4" />
@@ -281,7 +289,13 @@ const SignupPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="alex@example.com"
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none"
+                      className={`w-full pl-10 pr-4 py-2.5 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none ${
+                        !email
+                          ? 'border-slate-200 focus:border-[#5B4BFF] focus:bg-white'
+                          : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                          ? 'border-emerald-500 bg-emerald-50/20 focus:border-emerald-600'
+                          : 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
+                      }`}
                     />
                   </div>
                 </div>
@@ -300,7 +314,7 @@ const SignupPage = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none"
+                        className="w-full pl-10 pr-8 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none"
                       />
                       <button
                         type="button"
@@ -324,11 +338,14 @@ const SignupPage = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#5B4BFF] focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none"
                       />
                     </div>
                   </div>
                 </div>
+
+                {/* Password Strength Indicator */}
+                <PasswordStrength password={password} />
 
                 {/* Phone & Location */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

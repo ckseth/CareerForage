@@ -39,12 +39,12 @@ const Navbar = () => {
         
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform duration-300">
+          <div className="w-10 h-10 rounded-xl bg-[#5B4BFF] flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform duration-300">
             CF
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-1">
-              Career<span className="text-blue-600">Forge</span>
+              Career<span className="text-[#5B4BFF]">Forge</span>
             </span>
             <span className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase -mt-1">
               Smart Job & ATS Platform
@@ -71,14 +71,14 @@ const Navbar = () => {
             <div className="flex items-center gap-3">
               <Link
                 to={getDashboardPath(user?.role)}
-                className="px-4 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl flex items-center gap-2 shadow-sm transition-all"
+                className="px-4 py-2.5 text-xs font-bold text-white btn-gradient-brand flex items-center gap-2"
               >
                 <LayoutDashboard className="w-4 h-4 text-white" />
                 Dashboard
               </Link>
               <button
                 onClick={logout}
-                className="px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-slate-200"
+                className="px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-slate-200 cursor-pointer"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
@@ -94,7 +94,7 @@ const Navbar = () => {
               </Link>
               <Link
                 to="/signup"
-                className="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm shadow-blue-600/20 transition-all duration-200 transform hover:-translate-y-0.5"
+                className="px-5 py-2.5 text-xs font-bold text-white btn-gradient-brand"
               >
                 Get Started
               </Link>

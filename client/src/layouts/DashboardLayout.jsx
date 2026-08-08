@@ -169,11 +169,11 @@ const DashboardLayout = ({ children }) => {
                     onClick={() => setSidebarOpen(false)}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                       isActive
-                        ? 'bg-indigo-50 text-indigo-600 border-r-4 border-indigo-600 shadow-2xs font-bold'
+                        ? 'bg-[#5B4BFF]/10 text-[#5B4BFF] border-r-4 border-[#5B4BFF] shadow-xs font-bold'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
-                    <item.icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                    <item.icon className={`w-4 h-4 ${isActive ? 'text-[#5B4BFF]' : 'text-slate-400'}`} />
                     {item.name}
                   </Link>
                 );

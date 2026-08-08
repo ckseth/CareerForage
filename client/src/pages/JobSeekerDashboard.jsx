@@ -65,15 +65,21 @@ const JobSeekerDashboard = () => {
               <div className="flex items-center gap-3 pt-3 flex-wrap">
                 <Link
                   to="/resume-builder"
-                  className="px-7 py-3.5 text-xs font-bold text-slate-900 bg-white hover:bg-slate-100 rounded-2xl shadow-md transition-all flex items-center gap-2"
+                  className="px-6 py-3 text-xs font-bold text-slate-900 bg-white hover:bg-slate-100 rounded-2xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <FileText className="w-4.5 h-4.5 text-[#5B4BFF]" /> Build My Resume
+                  <FileText className="w-4 h-4 text-[#5B4BFF]" /> Build Resume
+                </Link>
+                <Link
+                  to="/resume-analyzer"
+                  className="px-6 py-3 text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl border border-white/20 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <Cpu className="w-4 h-4 text-amber-300" /> Analyze ATS Score
                 </Link>
                 <Link
                   to="/jobs"
-                  className="px-7 py-3.5 text-xs font-bold text-white bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl border border-white/20 transition-all flex items-center gap-2"
+                  className="px-6 py-3 text-xs font-bold text-white bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl border border-white/15 transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  <Briefcase className="w-4.5 h-4.5 text-amber-300" /> Find Jobs
+                  <Briefcase className="w-4 h-4 text-teal-300" /> Find Jobs
                 </Link>
               </div>
             </div>

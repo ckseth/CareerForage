@@ -203,7 +203,14 @@ const LoginPage = () => {
 
                 {/* Email Field */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Email address</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700">Email address</label>
+                    {email && (
+                      <span className={`text-[10px] font-semibold ${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'text-emerald-600' : 'text-rose-500'}`}>
+                        {/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '✓ Valid Email' : 'Invalid email format'}
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <Mail className="w-4 h-4" />
@@ -214,7 +221,13 @@ const LoginPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:border-indigo-600 focus:bg-white rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none"
+                      className={`w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-900 placeholder-slate-400 transition-all outline-none ${
+                        !email
+                          ? 'border-slate-200 focus:border-[#5B4BFF] focus:bg-white'
+                          : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                          ? 'border-emerald-500 bg-emerald-50/20 focus:border-emerald-600'
+                          : 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
+                      }`}
                     />
                   </div>
                 </div>
