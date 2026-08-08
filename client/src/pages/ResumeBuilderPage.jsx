@@ -45,6 +45,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 const ResumeBuilderPage = () => {
   const previewRef = useRef();
   const fileInputRef = useRef();
+  const profileImgInputRef = useRef();
+
+  // Profile Picture Upload Handler
+  const handleProfilePictureUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please upload a valid JPG, JPEG, or PNG image');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      handlePersonalChange('profileImage', event.target.result);
+      toast.success('Profile picture updated successfully!');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveProfilePicture = () => {
+    handlePersonalChange('profileImage', '');
+    toast.success('Profile picture removed');
+  };
 
   // Navigation Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -471,7 +496,7 @@ const ResumeBuilderPage = () => {
                   <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                     <div className="flex items-center gap-3.5">
                       <img
-                        src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop"
+                        src={formData.personalDetails.profileImage || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop"}
                         alt="Candidate Profile"
                         className="w-14 h-14 rounded-2xl object-cover border-2 border-[#4169FF]/30 shadow-sm"
                       />
@@ -606,6 +631,60 @@ const ResumeBuilderPage = () => {
               {/* Personal Section */}
               {activeSection === 'personal' && (
                 <div className="space-y-4">
+                  {/* Profile Picture Upload Option */}
+                  <div className="p-4 bg-slate-50 border border-[#E4E7EC] rounded-2xl space-y-3">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                      Profile Picture (JPG, JPEG, PNG)
+                    </label>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-200 border-2 border-[#4169FF]/30 shadow-xs shrink-0 flex items-center justify-center">
+                        {formData.personalDetails.profileImage ? (
+                          <img
+                            src={formData.personalDetails.profileImage}
+                            alt="Profile Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-8 h-8 text-slate-400" />
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5 flex-1">
+                        <input
+                          type="file"
+                          ref={profileImgInputRef}
+                          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                          onChange={handleProfilePictureUpload}
+                          className="hidden"
+                        />
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => profileImgInputRef.current?.click()}
+                            className="px-3.5 py-2 text-xs font-bold text-white bg-[#4169FF] hover:bg-[#3456D9] rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            {formData.personalDetails.profileImage ? 'Change Picture' : 'Upload Picture'}
+                          </button>
+
+                          {formData.personalDetails.profileImage && (
+                            <button
+                              type="button"
+                              onClick={handleRemoveProfilePicture}
+                              className="px-3.5 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-all cursor-pointer"
+                            >
+                              Remove Picture
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          Supports JPG, JPEG, PNG format
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-1">
                     <label className="text-xs font-bold uppercase tracking-wider text-slate-700">Full Name *</label>
                     <input
