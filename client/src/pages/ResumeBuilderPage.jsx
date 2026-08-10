@@ -331,8 +331,33 @@ const ResumeBuilderPage = () => {
     }
   };
 
-  const triggerPDFDownload = () => {
-    window.print();
+  const triggerPDFDownload = async () => {
+    try {
+      const element = document.getElementById('resume-printable-area');
+      
+      // Try importing html2pdf.js dynamically if installed
+      const html2pdfModule = await import('html2pdf.js').catch(() => null);
+      const html2pdf = html2pdfModule?.default || window.html2pdf;
+
+      if (html2pdf && element) {
+        const fileName = `${(formData.personalDetails.name || 'Candidate').trim().replace(/\s+/g, '_')}_Resume.pdf`;
+        const opt = {
+          margin: 0,
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        toast.loading('Generating high-res PDF...', { id: 'pdf-toast' });
+        await html2pdf().set(opt).from(element).save();
+        toast.success('Resume downloaded successfully!', { id: 'pdf-toast' });
+      } else {
+        window.print();
+      }
+    } catch (err) {
+      console.error('PDF download error:', err);
+      window.print();
+    }
   };
 
   // Tab section list
@@ -1121,10 +1146,14 @@ const ResumeBuilderPage = () => {
             {/* LARGE REALISTIC PRINTABLE A4 SHEET CONTAINER */}
             <div className="overflow-x-auto pb-4">
               <div
+                id="resume-printable-wrapper"
                 style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
                 className="transition-transform duration-200"
               >
-                <div className="w-full max-w-[650px] aspect-[210/297] bg-white shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-200/80 mx-auto font-sans leading-relaxed text-slate-900">
+                <div
+                  id="resume-printable-area"
+                  className="resume-printable-area w-full max-w-[650px] aspect-[210/297] bg-white shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-200/80 mx-auto font-sans leading-relaxed text-slate-900"
+                >
                   {renderSelectedTemplate()}
                 </div>
               </div>
@@ -1223,22 +1252,55 @@ const ResumeBuilderPage = () => {
 
       {/* PRINT MEDIA STYLES — Hides UI controls and prints ONLY the A4 Paper Sheet */}
       <style>{`
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
         @media print {
-          header, section#resume-editor-section > div > div:first-child, section:first-of-type, nav, footer, button, .no-print {
-            display: none !important;
+          *, *:before, *:after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           body, html, #root {
             background: #ffffff !important;
             margin: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
           }
-          .aspect-\\[210\\/297\\] {
+          header,
+          section:first-of-type,
+          .lg\\:col-span-5,
+          .sticky,
+          .fixed,
+          .no-print,
+          button,
+          nav,
+          footer,
+          [role="dialog"] {
+            display: none !important;
+          }
+          .lg\\:col-span-7 {
+            width: 100% !important;
+            position: static !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          #resume-printable-wrapper {
+            transform: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          #resume-printable-area, .resume-printable-area {
             box-shadow: none !important;
             border: none !important;
             width: 100% !important;
             max-width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
+            padding: 10mm 15mm !important;
+            margin: 0 auto !important;
+            page-break-after: avoid;
+            page-break-inside: avoid;
           }
         }
       `}</style>

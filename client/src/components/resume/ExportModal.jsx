@@ -94,11 +94,13 @@ const ExportModal = ({ isOpen, onClose, onConfirmDownload, templateName = 'Moder
             </button>
             <button
               onClick={() => {
-                onConfirmDownload();
                 onClose();
+                setTimeout(() => {
+                  onConfirmDownload();
+                }, 150);
               }}
               disabled={isExporting}
-              className="flex-1 py-3 text-xs font-bold text-white btn-gradient-brand flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 py-3 text-xs font-bold text-white bg-gradient-to-r from-[#4169FF] to-[#6C4CF6] hover:opacity-95 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               <Download className="w-4 h-4" />
               Download PDF
